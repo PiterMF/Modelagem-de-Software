@@ -1,0 +1,245 @@
+/* A3_MER_DER_Logico: */
+
+CREATE TABLE Usuario (
+    idUsuario CHAR PRIMARY KEY,
+    senha VARCHAR,
+    nomeUsuario VARCHAR,
+    CPF CHAR,
+    statusLogin VARCHAR,
+    dataCadastro DATE,
+    UNIQUE (idUsuario, CPF)
+);
+
+CREATE TABLE Jogador (
+    nomejogador VARCHAR,
+    idJogador CHAR PRIMARY KEY,
+    email VARCHAR,
+    nivel INTEGER,
+    experiencia INTEGER,
+    infoPagamento CHAR,
+    saldoMercado DECIMAL,
+    vitorias INTEGER,
+    amigos VARCHAR,
+    derrotas INTEGER,
+    skinHabilitada VARCHAR,
+    CPF CHAR UNIQUE,
+    idSkinTSkn CHAR
+);
+
+CREATE TABLE Administrador (
+    nomeAdm VARCHAR,
+    endereco VARCHAR,
+    chamadosAtendidos INTEGER,
+    CPF CHAR,
+    contatos VARCHAR,
+    email VARCHAR,
+    idAdm CHAR PRIMARY KEY,
+    codDeptoTDp CHAR,
+    UNIQUE (nomeAdm, CPF, idAdm)
+);
+
+CREATE TABLE Mercado_de_Skins (
+    quantidadeDisponivel INTEGER,
+    statusManutencao BOOLEAN,
+    tempoInicial DATE,
+    tempoRotacao DATE,
+    skinVenda CHAR PRIMARY KEY,
+    skinDisp1 CHAR,
+    skinDisp2 CHAR,
+    skinDisp3 CHAR,
+    skinDisp4 CHAR,
+    skinDisp5 CHAR
+);
+
+CREATE TABLE Partida (
+    jogador_2 VARCHAR,
+    pontos_j2 INTEGER,
+    idJogador_1 CHAR,
+    idJogador_2 CHAR,
+    idPartida CHAR PRIMARY KEY UNIQUE,
+    bot BOOLEAN,
+    tempo DATE,
+    pontos_j1 INTEGER,
+    jogador_1 VARCHAR
+);
+
+CREATE TABLE Skin (
+    nomeSkin VARCHAR,
+    idSkin CHAR PRIMARY KEY UNIQUE,
+    valor DECIMAL,
+    skinVendaMerc CHAR
+);
+
+CREATE TABLE Atualizacao (
+    codigoUpdate CHAR PRIMARY KEY UNIQUE,
+    nomeAdm VARCHAR,
+    idRelatorio CHAR,
+    descricaoAlteracao VARCHAR,
+    dataDesenvolvimento DATE,
+    idAdm CHAR
+);
+
+CREATE TABLE Relatorio_de_Erros (
+    idRelatorio CHAR PRIMARY KEY UNIQUE,
+    idjogador CHAR,
+    nomeJogador VARCHAR,
+    tipoErro VARCHAR,
+    descricao VARCHAR,
+    dataOcorrencia DATE
+);
+
+CREATE TABLE Registro_de_Pedidos (
+    numeroPedido CHAR PRIMARY KEY,
+    dataPedido DATE,
+    idJogador CHAR,
+    nomeJogador VARCHAR,
+    idBanco CHAR,
+    nomeBanco VARCHAR,
+    idSkin CHAR,
+    nomeSkin VARCHAR,
+    valor DECIMAL,
+    formaPagamento VARCHAR,
+    skinVendamMerc CHAR,
+    UNIQUE (numeroPedido, dataPedido, idJogador, nomeJogador, idBanco, nomeBanco, idSkin, nomeSkin, valor, formaPagamento)
+);
+
+CREATE TABLE Pagamento (
+    numeroPedido CHAR PRIMARY KEY UNIQUE,
+    dataPedido DATE,
+    nomeBanco VARCHAR,
+    valor DECIMAL,
+    parcelas INTEGER,
+    idJogadorTJog CHAR,
+    idBancoTBanc CHAR
+);
+
+CREATE TABLE Bancos_de_Pagamento (
+    idBanco CHAR PRIMARY KEY,
+    nomeBanco VARCHAR,
+    endereco VARCHAR,
+    nomeRepresentante VARCHAR,
+    emailRepresentante VARCHAR,
+    CNPJ CHAR,
+    UNIQUE (idBanco, nomeBanco, nomeRepresentante, CNPJ)
+);
+
+CREATE TABLE Departamento (
+    nomeDepartamento VARCHAR,
+    Responsavel VARCHAR,
+    idAdmTot CHAR,
+    nomeAdm VARCHAR,
+    codDepto CHAR PRIMARY KEY,
+    UNIQUE (codDepto, nomeDepartamento, Responsavel)
+);
+
+CREATE TABLE Inicia (
+    idJogadorBlnc CHAR,
+    idPartidaBlnc CHAR
+);
+
+CREATE TABLE Recebe (
+    fk_Administrador_idAdm CHAR,
+    idRelatorioRecebe CHAR
+);
+
+CREATE TABLE Desenvolve (
+    idAdmDev CHAR,
+    codigoUpdateDev CHAR
+);
+
+CREATE TABLE Denuncia_Erro (
+    idJogadorErr CHAR,
+    statusConexErr VARCHAR
+);
+
+CREATE TABLE Servidor (
+    statusConex VARCHAR PRIMARY KEY,
+    quantUsuarios INTEGER,
+    velConex INTEGER,
+    regiao VARCHAR
+);
+
+CREATE TABLE Emite (
+    statusConexEmis VARCHAR,
+    idRelatorioEmis CHAR
+);
+ 
+ALTER TABLE Jogador ADD CONSTRAINT FK_Jogador_2
+    FOREIGN KEY (idSkinTSkn)
+    REFERENCES Skin (idSkin)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Administrador ADD CONSTRAINT FK_Administrador_2
+    FOREIGN KEY (codDeptoTDp)
+    REFERENCES Departamento (codDepto)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Skin ADD CONSTRAINT FK_Skin_2
+    FOREIGN KEY (skinVendaMerc)
+    REFERENCES Mercado_de_Skins (skinVenda)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Registro_de_Pedidos ADD CONSTRAINT FK_Registro_de_Pedidos_2
+    FOREIGN KEY (skinVendamMerc)
+    REFERENCES Mercado_de_Skins (skinVenda)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Pagamento ADD CONSTRAINT FK_Pagamento_2
+    FOREIGN KEY (idJogadorTJog)
+    REFERENCES Jogador (idJogador)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Pagamento ADD CONSTRAINT FK_Pagamento_3
+    FOREIGN KEY (idBancoTBanc)
+    REFERENCES Bancos_de_Pagamento (idBanco)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Inicia ADD CONSTRAINT FK_Inicia_1
+    FOREIGN KEY (idJogadorBlnc)
+    REFERENCES Jogador (idJogador)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Inicia ADD CONSTRAINT FK_Inicia_2
+    FOREIGN KEY (idPartidaBlnc)
+    REFERENCES Partida (idPartida)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Recebe ADD CONSTRAINT FK_Recebe_1
+    FOREIGN KEY (fk_Administrador_idAdm)
+    REFERENCES Administrador (idAdm)
+    ON DELETE RESTRICT;
+ 
+ALTER TABLE Recebe ADD CONSTRAINT FK_Recebe_2
+    FOREIGN KEY (idRelatorioRecebe)
+    REFERENCES Relatorio_de_Erros (idRelatorio)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Desenvolve ADD CONSTRAINT FK_Desenvolve_1
+    FOREIGN KEY (idAdmDev)
+    REFERENCES Administrador (idAdm)
+    ON DELETE RESTRICT;
+ 
+ALTER TABLE Desenvolve ADD CONSTRAINT FK_Desenvolve_2
+    FOREIGN KEY (codigoUpdateDev)
+    REFERENCES Atualizacao (codigoUpdate)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Denuncia_Erro ADD CONSTRAINT FK_Denuncia_Erro_1
+    FOREIGN KEY (idJogadorErr???)
+    REFERENCES ??? (???)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Denuncia_Erro ADD CONSTRAINT FK_Denuncia_Erro_2
+    FOREIGN KEY (statusConexErr)
+    REFERENCES Servidor (statusConex)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Emite ADD CONSTRAINT FK_Emite_1
+    FOREIGN KEY (statusConexEmis)
+    REFERENCES Servidor (statusConex)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Emite ADD CONSTRAINT FK_Emite_2
+    FOREIGN KEY (idRelatorioEmis???)
+    REFERENCES ??? (???)
+    ON DELETE SET NULL;

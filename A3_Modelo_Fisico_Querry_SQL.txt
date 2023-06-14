@@ -1,0 +1,805 @@
+-- CREATE DATABASE othello_a3; -- Criação do Banco de Dados
+USE othello_a3;				   -- Uso do Banco de Dados
+
+-- Criação e alteração das Tabelas
+/*CREATE TABLE Jogador (
+	idJogador CHAR(07) NOT NULL,
+		PRIMARY KEY (idJogador),
+        UNIQUE 	KEY (idJogador)
+);*/
+
+/*ALTER TABLE Jogador -- Alteração feita para demonstrar o comando para, no caso, inserir novas colunas na tabela "Jogador", já existente
+   ADD nomeJogador 		VARCHAR(50) 	NOT NULL,
+   ADD email 			VARCHAR(50) 	NOT NULL,
+   ADD CPF				CHAR(11) UNIQUE NOT NULL,
+   ADD infoPagamento	CHAR(16), 
+   ADD saldoMercado		DECIMAL(10,2) UNSIGNED NOT NULL DEFAULT 0,
+   ADD nivel			INT(02)    		NOT NULL DEFAULT 0,
+   ADD experiencia		INT(03)			NOT NULL DEFAULT 0,
+   ADD amigos			VARCHAR(77),    -- Simula sistema símples de adição de ids separados por "," como por exemplo: AAA#000,BBB#111 etc
+   ADD skinHabilitada   VARCHAR(77)	NOT NULL DEFAULT 'AAA#000', -- mesmo que o item acima
+   ADD idSkinTSkn		CHAR(07) 		NOT NULL DEFAULT 'AAA$000',	-- Chave Estrangeira representando skin ativa
+   ADD vitorias			INT(05)			NOT NULL DEFAULT 0,
+   ADD derrotas 		INT(05)			NOT NULL DEFAULT 0;
+*/
+
+/*
+ ALTER TABLE Jogador -- Mudança do Identificador de tipo de ID
+    MODIFY skinHabilitada   CHAR(07)   		NOT NULL DEFAULT 'AAA$000'; 
+*/
+
+/*
+CREATE TABLE Administrador (
+	idAdm 		CHAR(07) PRIMARY KEY UNIQUE KEY NOT NULL,	-- Formato 'AAA@000'
+    nomeAdm		VARCHAR(50) 		 UNIQUE KEY NOT NULL,
+    CPF			CHAR(11) 			 UNIQUE KEY NOT NULL,
+    codDeptoTDp    CHAR(07)			 			NOT NULL,
+    email 		VARCHAR(50) 					NOT NULL,
+    endereco    VARCHAR(50)						NOT NULL,
+    contatos    VARCHAR(77),    
+    chamadosAtendidos INT(05) 					NOT NULL DEFAULT 0
+);
+
+CREATE TABLE Departamento ( 
+	codDepto  	CHAR(07) PRIMARY KEY UNIQUE KEY NOT NULL,	-- Formato 'DEP@000'
+    nomeDepto	VARCHAR(50) 		 UNIQUE KEY NOT NULL,
+    responsavel	VARCHAR(50) 		 UNIQUE KEY NOT NULL,
+    idAdmTot	VARCHAR(77), -- Representa todos os idAdm que fazem parte desse depto sendo todos separados por ","
+    nomeAdm		VARCHAR(50) -- Representa todos os nomeAdm que fazem parte desse depto, separados por "," mas enxuto para fins didáticos
+    ); 
+    
+CREATE TABLE BancoPagamento ( 
+	idBanco  			CHAR(07) PRIMARY KEY UNIQUE KEY NOT NULL,	-- Formato 'BCO$000'
+    nomeBanco			VARCHAR(50) 		 UNIQUE KEY NOT NULL,
+    CNPJ				CHAR(14) 			 UNIQUE KEY NOT NULL,
+    nomeRepresentante	VARCHAR(50) 		 UNIQUE KEY NOT NULL,
+    endereco			VARCHAR(50),
+    emailRepresentante	VARCHAR(50) 
+);
+
+CREATE TABLE Usuario ( 
+	idUsuario  			CHAR(07) PRIMARY KEY UNIQUE KEY NOT NULL,	-- Formato 'AAA@000' ou 'AAA#000'
+    senha				VARCHAR(10) 		 			NOT NULL,
+    CPF 				CHAR(11) 			 UNIQUE KEY NOT NULL,
+    nomeUsuario			VARCHAR(50) 		 			NOT NULL,
+    statusLogin			VARCHAR(15),
+    dataCadastro 		DATE  -- formato AAAA-MM-DD 
+);
+    
+CREATE TABLE RelatorioErro ( 
+	idRelatorio			CHAR(07) PRIMARY KEY UNIQUE KEY NOT NULL,	-- Formato 'REL@000'
+    idJogador			CHAR(07),
+    nomeJogador			VARCHAR(50),
+    tipoErro			VARCHAR(15),
+    descricao			VARCHAR(50),
+    dataOcorrencia 		DATE  -- formato AAAA-MM-DD 
+);
+    
+CREATE TABLE Atualizacao ( 
+	codUpdate			CHAR(07) PRIMARY KEY UNIQUE KEY NOT NULL,	-- Formato 'UPD@000'
+    idRelatorio			CHAR(07) 						NOT NULL,
+    idAdm				CHAR(07) 						NOT NULL,
+    nomeAdm		VARCHAR(50) 		 					NOT NULL,
+    descricaoAlteracao	VARCHAR(50),
+    dataDesenvolvimento	DATE  -- formato AAAA-MM-DD 
+);
+    
+CREATE TABLE Partida ( 
+	idPartida	 	CHAR(07) PRIMARY KEY UNIQUE KEY NOT NULL,	-- Formato 'AAAP000'
+	idJogador1	 	CHAR(07) 						NOT NULL,
+    idJogador2	 	CHAR(07) 						NOT NULL,
+    nomeJogador1 	VARCHAR(50) 		 			NOT NULL,
+    nomeJogador2 	VARCHAR(50) 		 			NOT NULL,
+    pontosJogador1	INT(02) 		 				NOT NULL,
+    pontosJogador2	INT(02) 		 				NOT NULL,
+    tempo	     	DATETIME						NOT NULL,	-- Formato aaaa-mm-dd hh:mm:ss
+    bot 		 	BOOL  							NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE Skin ( 
+	idSkin		 	CHAR(07) PRIMARY KEY UNIQUE KEY NOT NULL,	-- Formato 'AAA$000'
+    skinVendaMerc 	CHAR(01) 			 		    NOT NULL DEFAULT 'N', 	-- Chave Estrangeira
+	nomeSkin	 	VARCHAR(50) 		 			NOT NULL,
+    valor		 	DECIMAL(03,2) 		 			NOT NULL
+);
+
+CREATE TABLE MercadoSkin ( -- Tabela com 2 registros apenas: N para skins gratuitas e S para skins a venda no momento; Faz update não insert
+	skinVenda	 	CHAR(01)  PRIMARY KEY 			NOT NULL DEFAULT 'S', 	-- S OU N 
+	skinDisp1	 	CHAR(07),												-- Formato de Skin "AAA$000"
+	skinDisp2	 	CHAR(07),												-- Formato de Skin "AAA$000"
+	skinDisp3	 	CHAR(07),												-- Formato de Skin "AAA$000"
+	skinDisp4	 	CHAR(07),												-- Formato de Skin "AAA$000"
+	skinDisp5	 	CHAR(07),												-- Formato de Skin "AAA$000"
+    tempoInicial	DATETIME			NOT NULL DEFAULT CURRENT_TIMESTAMP,	-- Formato aaaa-mm-dd hh:mm:ss
+    tempoRotacao	DATETIME			NOT NULL DEFAULT CURRENT_TIMESTAMP,	-- Formato aaaa-mm-dd hh:mm:ss 
+    quantDisp	 	INT(01) 		 				NOT NULL DEFAULT 0,
+    statusManut		BOOL							NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE RegistroPedido ( 
+	numPedido	 	CHAR(07) PRIMARY KEY UNIQUE KEY NOT NULL,				-- Formato 'AAAC000'
+	skinVendaMerc 	CHAR(01)  			 			NOT NULL DEFAULT 'S', 	-- Chave Estrangeira
+	idBanco		 	CHAR(07) 						NOT NULL,
+	idJogador	 	CHAR(07) 						NOT NULL,
+	idSkin		 	CHAR(07) 						NOT NULL,
+	nomeSkin	 	VARCHAR(50) 		 			NOT NULL,
+    nomeBanco	 	VARCHAR(50) 		 			NOT NULL,
+    nomeJogador	 	VARCHAR(50) 		 			NOT NULL,
+    formaPagamento  VARCHAR(15)						NOT NULL,
+    valor		 	DECIMAL(03,2) 		 			NOT NULL,
+    dataPedido		DATE  							NOT NULL				-- formato AAAA-MM-DD 	NOT NULL
+);
+
+CREATE TABLE Pagamento (
+	numPedido	 	CHAR(07) PRIMARY KEY UNIQUE KEY NOT NULL,	-- Formato 'AAAC000'
+    idJogadorTJog	CHAR(07) 						NOT NULL,	-- Chave estrangeira
+	idBancoTBanc	CHAR(07) 						NOT NULL,	-- Chave estrangeira
+	nomeBanco	 	VARCHAR(50) 		 			NOT NULL,	
+    parcelas		INT(02)							NOT NULL,	
+    valor		 	DECIMAL(03,2) 		 			NOT NULL,	
+    dataPedido		DATE  -- formato AAAA-MM-DD     NOT NULL    -- formato AAAA-MM-DD
+);
+
+-- Tabelas de relação
+CREATE TABLE Servidor (
+    statusConex VARCHAR(15) PRIMARY KEY	NOT NULL, 	-- Exemplo "Conectado" ou "Offline"
+    quantUsuarios INTEGER(05),
+    velConex INTEGER(04),
+    regiao VARCHAR(02)  							-- "SP" ou "RJ"
+);
+CREATE TABLE Inicia (
+    idJogadorBlnc CHAR(07),
+    idPartidaBlnc CHAR(07)
+);
+CREATE TABLE Recebe (
+    idAdmRecebe CHAR(07),
+    idRelatorioRecebe CHAR(07)
+);
+CREATE TABLE Desenvolve (
+    idAdmDev CHAR(07),
+    codigoUpdateDev CHAR(07)
+);
+CREATE TABLE Denuncia_Erro (
+    idJogadorErr CHAR(07),
+    statusConexErr VARCHAR(15)
+);
+CREATE TABLE Emite (
+    statusConexEmis VARCHAR(15),
+    idRelatorioEmis CHAR(07)
+);
+*/
+/*
+-- Alterações de chave estrangeira
+ALTER TABLE Jogador ADD CONSTRAINT FK_Jogador_2
+    FOREIGN KEY (idSkinTSkn)
+    REFERENCES Skin (idSkin)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Administrador ADD CONSTRAINT FK_Administrador_2
+    FOREIGN KEY (codDeptoTDp)
+    REFERENCES Departamento (codDepto)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Skin ADD CONSTRAINT FK_Skin_2
+    FOREIGN KEY (skinVendaMerc)
+    REFERENCES MercadoSkin (skinVenda)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE RegistroPedido ADD CONSTRAINT FK_RegistroPedido_2
+    FOREIGN KEY (skinVendaMerc)
+    REFERENCES MercadoSkin (skinVenda)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Pagamento ADD CONSTRAINT FK_Pagamento_2
+    FOREIGN KEY (idJogadorTJog)
+    REFERENCES Jogador (idJogador)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Pagamento ADD CONSTRAINT FK_Pagamento_3
+    FOREIGN KEY (idBancoTBanc)
+    REFERENCES BancoPagamento (idBanco)
+    ON DELETE CASCADE;
+ 
+ALTER TABLE Inicia ADD CONSTRAINT FK_Inicia_1
+    FOREIGN KEY (idJogadorBlnc)
+    REFERENCES Jogador (idJogador)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Inicia ADD CONSTRAINT FK_Inicia_2
+    FOREIGN KEY (idPartidaBlnc)
+    REFERENCES Partida (idPartida)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Recebe ADD CONSTRAINT FK_Recebe_1
+    FOREIGN KEY (idAdmRecebe)
+    REFERENCES Administrador (idAdm)
+    ON DELETE RESTRICT;
+ 
+ALTER TABLE Recebe ADD CONSTRAINT FK_Recebe_2
+    FOREIGN KEY (idRelatorioRecebe)
+    REFERENCES RelatorioErro (idRelatorio)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Desenvolve ADD CONSTRAINT FK_Desenvolve_1
+    FOREIGN KEY (idAdmDev)
+    REFERENCES Administrador (idAdm)
+    ON DELETE RESTRICT;
+ 
+ALTER TABLE Desenvolve ADD CONSTRAINT FK_Desenvolve_2
+    FOREIGN KEY (codigoUpdateDev)
+    REFERENCES Atualizacao (codUpdate)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Denuncia_Erro ADD CONSTRAINT FK_Denuncia_Erro_1
+    FOREIGN KEY (idJogadorErr)
+    REFERENCES Jogador (idJogador)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Denuncia_Erro ADD CONSTRAINT FK_Denuncia_Erro_2
+    FOREIGN KEY (statusConexErr)
+    REFERENCES Servidor (statusConex)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Emite ADD CONSTRAINT FK_Emite_1
+    FOREIGN KEY (statusConexEmis)
+    REFERENCES Servidor (statusConex)
+    ON DELETE SET NULL;
+ 
+ALTER TABLE Emite ADD CONSTRAINT FK_Emite_2
+    FOREIGN KEY (idRelatorioEmis)
+    REFERENCES RelatorioErro (idRelatorio)
+    ON DELETE SET NULL;
+*/
+/*
+-- Deleta restrições de chave estrangeira
+ALTER TABLE Jogador DROP CONSTRAINT FK_Jogador_2; 
+ALTER TABLE Administrador DROP CONSTRAINT FK_Administrador_2; 
+ALTER TABLE Skin DROP CONSTRAINT FK_Skin_2;
+ALTER TABLE RegistroPedido DROP CONSTRAINT FK_RegistroPedido_2;
+ALTER TABLE Pagamento DROP CONSTRAINT FK_Pagamento_2;
+ALTER TABLE Pagamento DROP CONSTRAINT FK_Pagamento_3;
+ALTER TABLE Inicia DROP CONSTRAINT FK_Inicia_1;
+ALTER TABLE Inicia DROP CONSTRAINT FK_Inicia_2;
+ALTER TABLE Recebe DROP CONSTRAINT FK_Recebe_1;
+ALTER TABLE Recebe DROP CONSTRAINT FK_Recebe_2;
+ALTER TABLE Desenvolve DROP CONSTRAINT FK_Desenvolve_1;
+ALTER TABLE Desenvolve DROP CONSTRAINT FK_Desenvolve_2;
+ALTER TABLE Denuncia_Erro DROP CONSTRAINT FK_Denuncia_Erro_1;
+ALTER TABLE Denuncia_Erro DROP CONSTRAINT FK_Denuncia_Erro_2;
+ALTER TABLE Emite DROP CONSTRAINT FK_Emite_1;
+ALTER TABLE Emite DROP CONSTRAINT FK_Emite_2;
+*/
+
+-- deleta a Tabela caso necessário
+-- DROP TABLE Jogador;
+-- DROP TABLE Administrador;
+-- DROP TABLE Departamento;
+-- DROP TABLE BancoPagamento;
+-- DROP TABLE Usuario;
+-- DROP TABLE RelatorioErro;
+-- DROP TABLE Atualizacao;
+-- DROP TABLE Partida;
+-- DROP TABLE Skin;
+-- DROP TABLE MercadoSkin;
+-- DROP TABLE RegistroPedido;
+-- DROP TABLE Pagamento;
+
+
+-- Consulta todos os campos da tabela
+-- SELECT * FROM Jogador;
+-- SELECT * FROM Administrador;
+-- SELECT * FROM Departamento;
+-- SELECT * FROM BancoPagamento;
+-- SELECT * FROM Usuario;
+-- SELECT * FROM RelatorioErro;
+-- SELECT * FROM Atualizacao;
+-- SELECT * FROM Partida;
+-- SELECT * FROM Skin;
+-- SELECT * FROM MercadoSkin;
+-- SELECT * FROM RegistroPedido;
+-- SELECT * FROM Pagamento;
+
+/*
+-- Demonstração de CRUD de registro 3 de cada, para exemplificar a movimentação de dados
+INSERT INTO	Jogador(idJogador, nomeJogador, email, CPF, infoPagamento,  saldoMercado,experiencia, amigos, derrotas)
+            VALUES ('AAA#000', 'José Meire', 'jose.meire@gmail.com', 12345678900, 'XXXXYYYYWWWWZZZZ', 12.50, 250, 'AAA#001', 1);    
+INSERT INTO	Jogador(idJogador, nomeJogador, email, CPF, infoPagamento, experiencia, amigos, vitorias)
+            VALUES ('AAA#001', 'Maria Carla', 'carla.maryy@gmail.com', 11122233399, 'XXXXYYYYWWWWZZZZ', 250, 'AAA#000', 1);    
+INSERT INTO	Jogador(idJogador, nomeJogador, email, CPF, infoPagamento,  saldoMercado, experiencia, idSkinTSkn, derrotas)
+            VALUES (geraIdJogador(), 'Alberto Briks', 'alb.brks@gmail.com', 66666666699, 'XXXXYYYYWWWWZZZZ', 12.50, 100, 'AAA$000', 1);    
+INSERT INTO	Jogador(idJogador, nomeJogador, email, CPF, experiencia, amigos, vitorias)
+            VALUES (geraIdJogador(), 'Bruna Fratt', 'carla.maryy@gmail.com', 77777777799, 250, 'AAA#000', 1);  
+INSERT INTO	Administrador(idAdm, nomeAdm, email, CPF, codDeptoTDp,  endereco)
+            VALUES ('AAA@000', 'Alyne Gragas', 'algrags@hotmail.com', 00000011100, 'DEP@000', 'Rua Pachinko Madeira');    
+INSERT INTO	Administrador(idAdm, nomeAdm, email, CPF, codDeptoTDp, endereco)
+            VALUES ('AAA@001', 'Emilia Cruz', 'emiryyz@gmail.com', 00000022100, 'DEP@001', 'Av. Marcolos Paulino');
+INSERT INTO	Administrador(idAdm, nomeAdm, email, CPF, codDeptoTDp,  endereco)
+            VALUES (geraIdAdm(), 'Piter M. Fande', 'pitfande@hotmail.com', 00000014300, 'DEP@169', 'Rua Augusta Glup');
+INSERT INTO	Administrador(idAdm, nomeAdm, email, CPF, codDeptoTDp, endereco)
+            VALUES (geraIdAdm(), 'Eliane Bixiga', 'elibixiga@gmail.com', 00000033100, 'DEP@001', 'Av. Elton Dion');
+INSERT INTO	Administrador(idAdm, nomeAdm, email, CPF, codDeptoTDp, endereco)
+            VALUES (geraIdAdm(), 'Alisson Reis', 'emiryyz@gmail.com', 00000044100, 'DEP@169', 'Av. Aviador Mello');
+INSERT INTO	Administrador(idAdm, nomeAdm, email, CPF, codDeptoTDp, endereco)
+            VALUES (geraIdAdm(), 'Salvador Dalila', 'emiryyz@gmail.com', 00000055100, 'DEP@673', 'Rua Reptildo Nildo Alves');
+INSERT INTO	Administrador(idAdm, nomeAdm, email, CPF, codDeptoTDp, endereco)
+            VALUES (geraIdAdm(), 'Melias Veiga', 'emiryyz@gmail.com', 00000066100, 'DEP@732', 'Av. Marcolos Paulino');
+INSERT INTO	Departamento(codDepto, nomeDepto, responsavel)
+            VALUES (geraCodDepto(), 'Gerenciamento de Dados', 'Melias Veiga');
+INSERT INTO	Departamento(codDepto, nomeDepto, responsavel)
+            VALUES (geraCodDepto(), 'Desenvolvimento de Cosméticos', 'Salvador Dalila');
+INSERT INTO	Departamento(codDepto, nomeDepto, responsavel)
+            VALUES (geraCodDepto(), 'Qualidade', 'Alisson Reis');
+INSERT INTO	Atualizacao(codUpdate, idRelatorio, idAdm, nomeAdm, descricaoAlteracao, dataDesenvolvimento)
+		VALUES (geraCodUpdate(), geraIdRelatorio(), 'AAA@000', 'Alyne Gragas', 'Criação de sistema de convite para partida', CURRENT_DATE());
+INSERT INTO	Atualizacao(codUpdate, idRelatorio, idAdm, nomeAdm, descricaoAlteracao, dataDesenvolvimento)
+		VALUES (geraCodUpdate(), geraIdRelatorio(), 'AAA@001', 'Emilia Cruz', 'Correção de erro de compra', CURRENT_DATE());
+INSERT INTO MercadoSkin(skinDisp1) VALUES ('AAA$002');
+INSERT INTO MercadoSkin(skinVenda, skinDisp1) VALUES ('N', 'AAA$000');
+INSERT INTO BancoPagamento (idBanco, nomeBanco, CNPJ, nomeRepresentante)
+					VALUES (geraIdBanco(), 'Brasil', 11112222330001, 'Emil C. Barra');
+INSERT INTO BancoPagamento (idBanco, nomeBanco, CNPJ, nomeRepresentante)
+					VALUES (geraIdBanco(), 'Itaubi', 22225599330001, 'Marcos Marrocos');
+INSERT INTO Partida (idPartida, idJogador1, idJogador2, nomeJogador1, nomeJogador2, pontosJogador1, pontosJogador2, tempo)
+			 VALUES (geraIdPartida(), 'AAA#000', 'AAA#001', 'José Meire', 'Maria Carla', 13, 60, current_timestamp());
+INSERT INTO Inicia (idJogadorBlnc, idPartidaBlnc) VALUES ('AAA#000', 'DENP955');
+INSERT INTO Servidor (statusConex) VALUE('Conectado');
+INSERT INTO RelatorioErro (idRelatorio) VALUE (geraIdRelatorio()); 
+INSERT INTO Recebe (idAdmRecebe, idRelatorioRecebe) VALUES ('AAA@000', 'REL@272');
+INSERT INTO Desenvolve(idAdmDev, codigoUpdateDev) VALUES('AAA@000', 'UPD@401');
+INSERT INTO Emite (statusConexEmis, idRelatorioEmis) VALUES ('Conectado', 'REL@272');
+INSERT INTO Denuncia_Erro (idJogadorErr, statusConexErr) VALUES ('AAA#000', 'Conectado');
+
+# DELETE FROM Departamento WHERE nomeDepto = 'Qualidade'; 
+# DELETE FROM MercadoSkin  WHERE skinVenda = 'N'; 
+
+UPDATE MercadoSkin
+SET skinDisp2 = 'AAA$001'
+WHERE skinVenda = 's';
+
+
+# CALL inclui_usuarios();
+# CALL reseta_mercado();
+# CALL registra_pag( 'BCO$101', 'AAA#000', 'AAA$006');
+*/  
+
+/*
+-- Criação e deleção de funções para geração de IDs
+-- Jogador
+# DROP FUNCTION IF EXISTS geraIdJogador;
+DELIMITER $$  -- delimita espaço para a função geraIdJogador
+CREATE FUNCTION geraIdJogador() RETURNS CHAR(7) NOT DETERMINISTIC   -- gera ID no formato "AAA#000"
+BEGIN 
+	DECLARE prefixo 	  CHAR(3);   -- Prefixo 'AAA'
+	DECLARE sufixo 		  CHAR(3);   -- Sufixo  '000'
+	DECLARE nextID CHAR(7);   -- Concatena 'AAA' + '#' + '000'
+    DECLARE indicaDuplicado INT;
+
+    #  prefixo: [CONCAT = concatena os bytes / RAND = gera número aleatório entre 0 e 1 / FLOOR = arredonda decimal para garantir inteiro
+    #  '* 26' multiplica considerando 26 letras no alfabeto / '+ 65' desloca o num para entre 65 e 90 (códigos ASCII - maiúsculas de A a Z)] 
+	#  sufixo: [LPAD = preenche à esquerda, no caso, a string definida com 3 bytes, usando o valor '0', exemplo: gera de 0 a 1 * 1000, 
+    #  arredondando com FLOOR para baixo, essa multiplicação ficando num intervalo de 000 a 999 sempre] 
+    SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65))); 
+    SET sufixo  = LPAD(FLOOR(RAND() * 1000), 3, '0');
+    SET nextID = CONCAT(prefixo, '#', sufixo);
+    
+    SET indicaDuplicado = (SELECT COUNT(*) FROM Jogador WHERE idJogador = nextID);
+    WHILE indicaDuplicado > 0 DO
+        SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65)));
+        SET sufixo = LPAD(FLOOR(RAND() * 1000), 3, '0');
+        SET nextID = CONCAT(prefixo, '#', sufixo);
+        SET indicaDuplicado = (SELECT COUNT(*) FROM Jogador WHERE idJogador = nextID);
+    END WHILE;
+    
+    RETURN nextID;
+    
+    
+END; 
+*/
+/*
+-- Administrador idAdm "AAA@000"
+# DROP FUNCTION IF EXISTS geraIdAdm;
+DELIMITER $$  -- delimita espaço para a função geraIdAdm
+CREATE FUNCTION geraIdAdm() RETURNS CHAR(7)    -- gera ID no formato "AAA@000"
+BEGIN 
+	DECLARE prefixo 	  CHAR(3);   -- Prefixo 'AAA'
+	DECLARE sufixo 		  CHAR(3);   -- Sufixo  '000'
+	DECLARE nextID CHAR(7);   -- Concatena 'AAA' + '@' + '000'
+    DECLARE indicaDuplicado INT;
+
+    SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65))); 
+    SET sufixo  = LPAD(FLOOR(RAND() * 1000), 3, '0');
+    SET nextID = CONCAT(prefixo, '@', sufixo);
+    
+    SET indicaDuplicado = (SELECT COUNT(*) FROM Administrador WHERE idAdm = nextID);
+    WHILE indicaDuplicado > 0 DO
+        SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65)));
+        SET sufixo = LPAD(FLOOR(RAND() * 1000), 3, '0');
+        SET nextID = CONCAT(prefixo, '@', sufixo);
+        SET indicaDuplicado = (SELECT COUNT(*) FROM Administrador WHERE idAdm = nextID);
+    END WHILE;
+    
+    RETURN nextID;
+END;
+*/
+/*
+-- Departamento codDepto 'DEP@000'
+# DROP FUNCTION IF EXISTS geraCodDepto;
+DELIMITER $$  -- delimita espaço para a função geraCodDepto
+CREATE FUNCTION geraCodDepto() RETURNS CHAR(7)    -- gera ID no formato 'DEP@000'
+BEGIN 
+	DECLARE prefixo 	  CHAR(3);   -- Prefixo 'DEP'
+	DECLARE sufixo 		  CHAR(3);   -- Sufixo  '000'
+	DECLARE nextID CHAR(7);   -- Concatena 'DEP' + '@' + '000'
+    DECLARE indicaDuplicado INT;
+
+    SET prefixo = 'DEP'; 
+    SET sufixo  = LPAD(FLOOR(RAND() * 1000), 3, '0');
+    SET nextID = CONCAT(prefixo, '@', sufixo);
+    
+    SET indicaDuplicado = (SELECT COUNT(*) FROM Departamento WHERE codDepto = nextID);
+    WHILE indicaDuplicado > 0 DO
+        SET prefixo = 'DEP';
+        SET sufixo = LPAD(FLOOR(RAND() * 1000), 3, '0');
+        SET nextID = CONCAT(prefixo, '@', sufixo);
+        SET indicaDuplicado = (SELECT COUNT(*) FROM Departamento WHERE codDepto = nextID);
+    END WHILE;
+    
+    RETURN nextID;
+END;
+
+
+-- BancoPagamento idBanco 'BCO$000'
+# DROP FUNCTION IF EXISTS geraIdBanco;
+DELIMITER $$  -- delimita espaço para a função geraIdBanco
+CREATE FUNCTION geraIdBanco() RETURNS CHAR(7)    -- gera ID no formato 'BCO$000'
+BEGIN 
+	DECLARE prefixo 	  CHAR(3);   -- Prefixo 'BCO'
+	DECLARE sufixo 		  CHAR(3);   -- Sufixo  '000'
+	DECLARE nextID CHAR(7);   -- Concatena 'BCO' + '$' + '000'
+    DECLARE indicaDuplicado INT;
+
+    SET prefixo = 'BCO'; 
+    SET sufixo  = LPAD(FLOOR(RAND() * 1000), 3, '0');
+    SET nextID = CONCAT(prefixo, '$', sufixo);
+    
+    SET indicaDuplicado = (SELECT COUNT(*) FROM BancoPagamento WHERE idBanco = nextID);
+    WHILE indicaDuplicado > 0 DO
+        SET prefixo = 'BCO';
+        SET sufixo = LPAD(FLOOR(RAND() * 1000), 3, '0');
+        SET nextID = CONCAT(prefixo, '$', sufixo);
+        SET indicaDuplicado = (SELECT COUNT(*) FROM BancoPagamento WHERE idBanco = nextID);
+    END WHILE;
+    
+    RETURN nextID;
+END;
+
+-- RelatorioErro idRelatorio 'REL@000'
+# DROP FUNCTION IF EXISTS geraIdRelatorio;
+DELIMITER $$  -- delimita espaço para a função geraIdRelatorio
+CREATE FUNCTION geraIdRelatorio() RETURNS CHAR(7)    -- gera ID no formato 'REL@000'
+BEGIN 
+	DECLARE prefixo 	  CHAR(3);   -- Prefixo 'REL'
+	DECLARE sufixo 		  CHAR(3);   -- Sufixo  '000'
+	DECLARE nextID CHAR(7);   -- Concatena 'REL' + '@' + '000'
+    DECLARE indicaDuplicado INT;
+
+    SET prefixo = 'REL'; 
+    SET sufixo  = LPAD(FLOOR(RAND() * 1000), 3, '0');
+    SET nextID 	= CONCAT(prefixo, '@', sufixo);
+    
+    SET indicaDuplicado = (SELECT COUNT(*) FROM RelatorioErro WHERE idRelatorio = nextID);
+    WHILE indicaDuplicado > 0 DO
+        SET prefixo = 'REL'; 
+        SET sufixo 	= LPAD(FLOOR(RAND() * 1000), 3, '0');
+        SET nextID 	= CONCAT(prefixo, '@', sufixo);
+        SET indicaDuplicado = (SELECT COUNT(*) FROM RelatorioErro WHERE idRelatorio = nextID);
+    END WHILE;
+    
+    RETURN nextID;
+END;
+
+-- Atualizacao codUpdate 'UPD@000'
+# DROP FUNCTION IF EXISTS geraCodUpdate;
+DELIMITER $$  -- delimita espaço para a função geraCodUpdate
+CREATE FUNCTION geraCodUpdate() RETURNS CHAR(7)    -- gera ID no formato 'UPD@000'
+BEGIN 
+	DECLARE prefixo 	  CHAR(3);   -- Prefixo 'UPD'
+	DECLARE sufixo 		  CHAR(3);   -- Sufixo  '000'
+	DECLARE nextID CHAR(7);   -- Concatena 'UPD' + '@' + '000'
+    DECLARE indicaDuplicado INT;
+
+    SET prefixo = 'UPD'; 
+    SET sufixo  = LPAD(FLOOR(RAND() * 1000), 3, '0');
+    SET nextID = CONCAT(prefixo, '@', sufixo);
+    
+    SET indicaDuplicado = (SELECT COUNT(*) FROM Atualizacao WHERE codUpdate = nextID);
+    WHILE indicaDuplicado > 0 DO
+        SET prefixo = 'UPD';
+        SET sufixo = LPAD(FLOOR(RAND() * 1000), 3, '0');
+        SET nextID = CONCAT(prefixo, '@', sufixo);
+        SET indicaDuplicado = (SELECT COUNT(*) FROM Atualizacao WHERE codUpdate = nextID);
+    END WHILE;
+    
+    RETURN nextID;
+END;
+
+-- Skin idSkin 'AAA$000'
+# DROP FUNCTION IF EXISTS geraIdSkin;
+DELIMITER $$  -- delimita espaço para a função geraIdSkin
+CREATE FUNCTION geraIdSkin() RETURNS CHAR(7)    -- gera ID no formato 'AAA$000'
+BEGIN 
+	DECLARE prefixo 	  CHAR(3);   -- Prefixo 'AAA'
+	DECLARE sufixo 		  CHAR(3);   -- Sufixo  '000'
+	DECLARE nextID CHAR(7);   -- Concatena 'AAA' + '$' + '000'
+    DECLARE indicaDuplicado INT;
+
+    SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65))); 
+    SET sufixo  = LPAD(FLOOR(RAND() * 1000), 3, '0');
+    SET nextID = CONCAT(prefixo, '$', sufixo);
+    
+    SET indicaDuplicado = (SELECT COUNT(*) FROM Skin WHERE idSkin = nextID);
+    WHILE indicaDuplicado > 0 DO
+        SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65)));
+        SET sufixo = LPAD(FLOOR(RAND() * 1000), 3, '0');
+        SET nextID = CONCAT(prefixo, '$', sufixo);
+        SET indicaDuplicado = (SELECT COUNT(*) FROM Skin WHERE idSkin = nextID);
+    END WHILE;
+    
+    RETURN nextID;
+END;
+
+-- RegistroPedido numPedido 'AAAC000'
+# DROP FUNCTION IF EXISTS geraNumPedido;
+DELIMITER $$  -- delimita espaço para a função geraNumPedido
+CREATE FUNCTION geraNumPedido() RETURNS CHAR(7)    -- gera ID no formato 'AAAC000'
+BEGIN 
+	DECLARE prefixo 	  CHAR(3);   -- Prefixo 'AAA'
+	DECLARE sufixo 		  CHAR(3);   -- Sufixo  '000'
+	DECLARE nextID CHAR(7);   -- Concatena 'AAA' + 'C' + '000'
+    DECLARE indicaDuplicado INT;
+
+    SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65))); 
+    SET sufixo  = LPAD(FLOOR(RAND() * 1000), 3, '0');
+    SET nextID = CONCAT(prefixo, 'C', sufixo);
+    
+    SET indicaDuplicado = (SELECT COUNT(*) FROM RegistroPedido WHERE numPedido = nextID);
+    WHILE indicaDuplicado > 0 DO
+        SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65)));
+        SET sufixo = LPAD(FLOOR(RAND() * 1000), 3, '0');
+        SET nextID = CONCAT(prefixo, 'C', sufixo);
+        SET indicaDuplicado = (SELECT COUNT(*) FROM RegistroPedido WHERE numPedido = nextID);
+    END WHILE;
+    
+    RETURN nextID;
+END;
+
+-- Partida idPartida 'AAAP000'
+# DROP FUNCTION IF EXISTS geraIdPartida;
+DELIMITER $$  -- delimita espaço para a função geraIdPartida
+CREATE FUNCTION geraIdPartida() RETURNS CHAR(7)    -- gera ID no formato 'AAAP000'
+BEGIN 
+	DECLARE prefixo 	  CHAR(3);   -- Prefixo 'AAA'
+	DECLARE sufixo 		  CHAR(3);   -- Sufixo  '000'
+	DECLARE nextID CHAR(7);   -- Concatena 'AAA' + 'P' + '000'
+    DECLARE indicaDuplicado INT;
+
+    SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65))); 
+    SET sufixo  = LPAD(FLOOR(RAND() * 1000), 3, '0');
+    SET nextID = CONCAT(prefixo, 'P', sufixo);
+    
+    SET indicaDuplicado = (SELECT COUNT(*) FROM Partida WHERE idPartida = nextID);
+    WHILE indicaDuplicado > 0 DO
+        SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65)));
+        SET sufixo = LPAD(FLOOR(RAND() * 1000), 3, '0');
+        SET nextID = CONCAT(prefixo, 'P', sufixo);
+        SET indicaDuplicado = (SELECT COUNT(*) FROM Partida WHERE idPartida = nextID);
+    END WHILE;
+    
+    RETURN nextID;
+END;
+*/
+/* **********************************************
+-- Usuario idUsuario 'AAA@000' ou 'AAA#000' existente
+# DROP FUNCTION IF EXISTS geraIdUsuario;
+DELIMITER $$  -- delimita espaço para a função geraIdUsuario
+CREATE FUNCTION geraIdUsuario() RETURNS CHAR(7)    -- gera ID no formato 'AAA@000' ou 'AAA#000' existente
+BEGIN 
+	DECLARE prefixo 	  CHAR(3);   -- Prefixo 'AAA'
+	DECLARE sufixo 		  CHAR(3);   -- Sufixo  '000'
+	DECLARE nextID CHAR(7);   -- Concatena 'AAA' + '@' + '000'
+    DECLARE indicaDuplicado INT;
+
+    SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65))); 
+    SET sufixo  = LPAD(FLOOR(RAND() * 1000), 3, '0');
+    SET nextID = CONCAT(prefixo, '@', sufixo);
+    
+    SET indicaDuplicado = (SELECT COUNT(*) FROM Usuario WHERE idUsuario = nextID);
+    WHILE indicaDuplicado > 0 DO
+        SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65)));
+        SET sufixo = LPAD(FLOOR(RAND() * 1000), 3, '0');
+        SET nextID = CONCAT(prefixo, '#', sufixo);
+        SET indicaDuplicado = (SELECT COUNT(*) FROM Usuario WHERE idUsuario = nextID);
+    END WHILE;
+    
+    RETURN nextID;
+END;
+*/
+/*
+-- ****Criação de Procedimentos****
+# DROP PROCEDURE reseta_mercado;
+ -- Renovação de todas as skins a venda do mercado:
+DELIMITER $$
+CREATE PROCEDURE reseta_mercado()
+BEGIN
+	DECLARE contador	 INT DEFAULT 0;
+    DECLARE totalReg 	 INT;
+    DECLARE idRegistro 	 CHAR(07) DEFAULT 'INICIAL'; -- Vaeriável temporária que recebe valor para movimentações
+    DECLARE idDuplicado	 CHAR(07) DEFAULT 'INICIAL'; -- Vaeriável controle de repetidos
+    DECLARE idSkinVendaT CHAR(07);	
+    DECLARE idSkinVenda1 CHAR(07);	
+    DECLARE idSkinVenda2 CHAR(07);	
+    DECLARE idSkinVenda3 CHAR(07);	
+    DECLARE idSkinVenda4 CHAR(07);	
+    DECLARE idSkinVenda5 CHAR(07);	
+    
+	CREATE TEMPORARY TABLE SkinsVenda (idSkinVenda CHAR (07));
+    
+    -- Obtém total de registros da tabela de skins com skinVendaMerc 'S'
+    SELECT COUNT(*) INTO totalReg FROM Skin WHERE  skinVendaMerc = 'S';
+    
+    -- Retira todas as skins do mercado de venda
+    WHILE contador <= totalReg DO
+		SELECT idSkin INTO idSkinVendaT FROM Skin 
+        WHERE  skinVendaMerc = 'S' LIMIT 1;
+        
+		UPDATE Skin 
+			SET    skinVendaMerc = 'N'
+        WHERE idSkin = idSkinVendaT;
+        
+		SET contador = contador + 1; -- Realiza incremento para sair do laço while
+    END WHILE;
+    
+    SET contador = 0; -- Reseta o contador para seleção das skins a venda
+    SELECT COUNT(*) INTO totalReg FROM Skin; -- Reseta o contador de total de registros
+    
+	-- Seleciona 5 skins aleatórias
+	WHILE contador < 5 DO
+		SET idRegistro = ( -- Seleciona id CHAR(07) aleatório
+			SELECT idSkin 
+			FROM Skin
+            WHERE idSkin NOT IN (SELECT idSkinVenda FROM SkinsVenda)
+			ORDER BY RAND()
+			LIMIT 1
+		);
+        -- coloca status de skin a venda
+		UPDATE Skin        
+			SET    skinVendaMerc = 'S'
+		WHERE  idSkin = idRegistro;
+        
+        -- Reserva o ID na tabela temporária para evitar duplicidades
+        INSERT INTO SkinsVenda (idSkinVenda) VALUE (idRegistro);
+        
+        -- Reserva valores dos IDs de Skin escolhidos aleatoriamente para atualizar no Mercado
+        SET idSkinVenda1 = CASE contador WHEN 0 THEN idRegistro ELSE idSkinVenda1 END,
+			idSkinVenda2 = CASE contador WHEN 1 THEN idRegistro ELSE idSkinVenda2 END,
+            idSkinVenda3 = CASE contador WHEN 2 THEN idRegistro ELSE idSkinVenda3 END,
+            idSkinVenda4 = CASE contador WHEN 3 THEN idRegistro ELSE idSkinVenda4 END,
+            idSkinVenda5 = CASE contador WHEN 4 THEN idRegistro ELSE idSkinVenda5 END;
+            
+        SET contador = contador + 1; -- Realiza incremento para sair do laço while
+    END WHILE;
+    
+	-- Define novos valores na tabela de vendas
+        UPDATE MercadoSkin
+			SET skinDisp1 = idSkinVenda1,
+				skinDisp2 = idSkinVenda2,
+				skinDisp3 = idSkinVenda3,
+				skinDisp4 = idSkinVenda4,
+				skinDisp5 = idSkinVenda5
+		WHERE skinVenda = 'S';
+        
+    DROP TEMPORARY TABLE SkinsVenda;
+END $$
+DELIMITER ;
+*/ 
+/*
+-- Inserção de todos os Usuários existentes
+# DROP PROCEDURE inclui_usuarios;
+DELIMITER $$
+CREATE PROCEDURE inclui_usuarios()
+BEGIN
+
+	DECLARE prefixo 	 	CHAR(5);   -- Prefixo 'AAA'
+	DECLARE sufixo 		 	CHAR(5);   -- Sufixo  '000'
+	DECLARE senhaGerada		CHAR(10);   -- Concatena 'AAAAA' + '00000'
+	DECLARE idAdmAtual 		CHAR (07);
+	DECLARE idJogAtual 		CHAR (07);
+	DECLARE cpfAdmAtual 	CHAR (11);
+	DECLARE cpfJogAtual 	CHAR (11);
+	DECLARE nomeJogAtual	VARCHAR(50);
+    DECLARE nomeAdmAtual	VARCHAR(50);
+    DECLARE fimTabela	BOOL DEFAULT FALSE;
+    
+    -- Cria cursor para adicionar os registros da tabela Administrador e Jogaddor
+    DECLARE cursorAdm CURSOR FOR SELECT idAdm, CPF, nomeAdm 		FROM Administrador;
+    DECLARE cursorJog CURSOR FOR SELECT idJogador, CPF, nomeJogador FROM Jogador;
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET fimTabela = TRUE;
+    
+    OPEN cursorAdm; -- Abre o cursor e o loop da tabela Administrador e pega o registro a ser inserido
+    loopAdm: LOOP
+		FETCH cursorAdm INTO idAdmAtual, cpfAdmAtual, nomeAdmAtual;
+		-- Se o final da tabela for verdadeiro, ele finaliza o loop sem pegar valores nulos
+        IF fimTabela THEN
+			LEAVE loopAdm;
+        END IF;
+        
+        SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65),
+						CHAR(FLOOR(RAND() * 26) + 65),CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65))); 
+		SET sufixo  = LPAD(FLOOR(RAND() * 1000), 5, '0');
+		SET senhaGerada = CONCAT(prefixo,  sufixo);  
+        
+        -- Insere novo registro ignorando erros de chave primária ou única, evitando duplicatas
+        INSERT IGNORE INTO Usuario (idUsuario, senha, CPF, nomeUsuario, statusLogin, dataCadastro) 
+							VALUES (idAdmAtual, senhaGerada, cpfAdmAtual, nomeAdmAtual, 'offline', CURRENT_DATE()); 
+	END LOOP;
+
+	CLOSE cursorAdm;
+	
+    -- Reseta o indicador de final de tabela para uso no loop da Tabela Jogador
+    SET fimTabela = FALSE;
+    
+    OPEN cursorJog; -- Abre o cursor e o loop da tabela Jogador e pega o registro a ser inserido
+    loopJog: LOOP
+		FETCH cursorJog INTO idJogAtual, cpfJogAtual, nomeJogAtual;
+        
+		-- Se o final da tabela for verdadeiro, ele finaliza o loop sem pegar valores nulos
+        IF fimTabela THEN
+			LEAVE loopJog;
+        END IF;
+        
+        SET prefixo = (SELECT CONCAT(CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65),
+						CHAR(FLOOR(RAND() * 26) + 65),CHAR(FLOOR(RAND() * 26) + 65), CHAR(FLOOR(RAND() * 26) + 65))); 
+		SET sufixo  = LPAD(FLOOR(RAND() * 1000), 5, '0');
+		SET senhaGerada = CONCAT(prefixo,  sufixo);  
+        
+        -- Insere novo registro ignorando erros de chave primária ou única, evitando duplicatas
+        INSERT IGNORE INTO Usuario (idUsuario, senha, CPF, nomeUsuario, statusLogin, dataCadastro) 
+							VALUES (idJogAtual, senhaGerada, cpfJogAtual, nomeJogAtual, 'offline', CURRENT_DATE()); 
+	END LOOP;
+
+	CLOSE cursorJog;
+       
+END $$
+DELIMITER ;
+*/
+/*
+DELIMITER $$
+CREATE PROCEDURE registra_pag (
+	IN idBancoProc 		CHAR (07),
+	IN idJogadorProc 	CHAR (07),
+	IN idSkinProc 		CHAR (07)
+)
+BEGIN 
+DECLARE valorProc 		DECIMAL(03,2);
+DECLARE nomeJogProc		VARCHAR(50);
+DECLARE nomeBancProc	VARCHAR(50);
+DECLARE nomeSkinProc	VARCHAR(50);
+DECLARE formaPagProc  	VARCHAR(15) DEFAULT 'DEBITO';
+DECLARE parcelaProc  	INT(02) 	DEFAULT 1;
+DECLARE numPedidoProc 	CHAR (07);
+
+SELECT nomeBanco 		INTO nomeBancProc				FROM BancoPagamento WHERE idBanco   = idBancoProc;
+SELECT nomeJogador 		INTO nomeJogProc  				FROM Jogador	  	WHERE idJogador = idJogadorProc;
+SELECT nomeSkin, valor 	INTO nomeSkinProc, valorProc   	FROM Skin	  	 	WHERE idSkin 	= idSkinProc;
+
+SELECT geraNumPedido() INTO numPedidoProc;
+
+INSERT INTO RegistroPedido (numPedido, idBanco, idJogador, idSkin, nomeBanco, nomeSkin, nomeJogador, formaPagamento, valor, dataPedido)
+				    VALUES (numPedidoProc, idBancoProc, idJogadorProc, idSkinProc, nomeBancProc, nomeSkinProc, nomeJogProc, formaPagProc,
+							valorProc, CURRENT_DATE());
+INSERT INTO Pagamento (numPedido, idBancoTBanc, idJogadorTJog, nomeBanco, parcelas, valor, dataPedido)
+			   VALUES (numPedidoProc, idBancoProc, idJogadorProc, nomeBancProc, parcelaProc, valorProc, CURRENT_DATE());
+
+END $$
+DELIMITER ;
+*/
